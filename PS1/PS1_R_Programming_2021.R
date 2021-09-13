@@ -22,6 +22,8 @@ m<- matrix(1:10,nrow = 2, ncol = 5)
 # Second Way
 m2 <- 1:10
 dim(m2) <- c(2,5)
+#Third Way
+m3<- as.matrix(rbind(1:5,6:10))
 #~~~~~~~~~~~~~~~~
 
 #2. Label the rows of your matrix "A" and "B", and the columns "a", ..."e".
@@ -44,6 +46,7 @@ site<- as.factor(1:5)
 value<- c(100, 200, 300, 400, 500)
 df<-cbind(site, value)
 rownames(df)<- c("a", "b", "c", "d","e")
+df<-data.frame(df)
 #~~~~~~~~~~~~~~~~
 
 #5. Rename the variables (columns) in df "site.cat" and "x".
@@ -92,6 +95,7 @@ d<- read.csv('PS1/grouse_data.csv')
 d$ROUTE<- as.factor(d$ROUTE)
 d$STATION<- as.factor(d$STATION)
 d$GROUSE<- as.integer(d$GROUSE)
+summary(d)
 #~~~~~~~~~~~~~~~~
 
 #################################################################
@@ -101,15 +105,23 @@ d$GROUSE<- as.integer(d$GROUSE)
 #8. Select the subset of d with (a) ROUTE = 1, (b) LAT greater than mean(LAT), (c) LAT greater than median(LAT)
 #~~~~~~~~~~~~~~~~
 # (a)
+#Base R
+d[d$ROUTE == 1,]
+#dplyr
 d%>%
   filter(ROUTE == 1)
 # (b)
+#Base R
+d[d$LAT > mean(d$LAT),]
+#dplyr
 d%>%
   filter(LAT > mean(LAT))
 # (c)
+#Base R
+d[d$LAT > median(d$LAT),]
+#dplyr
 d%>%
   filter(LAT > median(LAT))
-
 #~~~~~~~~~~~~~~~~
 
 #9. Create a new variable "NORTHERN" that is TRUE for the more northerly half of the stations and FALSE otherwise.
@@ -157,20 +169,20 @@ library(dplyr)
 #~~~~~~~~~~~~~~~~
 d.L <- select(d2, starts_with("L"))
 d.L.base<- d2[, c("LAT", "LONG")]
+data.frame(LAT = d$LAT, LONG=d$LONG)
 #~~~~~~~~~~~~~~~~
 
 #14. Select rows of d that contain the highest 50% of the values of LAT. Do this both using and not using dplyr. Do you see any differences in the data.frame that is produced?
 #~~~~~~~~~~~~~~~~
 d.LAT50 <- d %>%
   filter(LAT > mean(LAT))
-d.LAT50.base <- filter(d, LAT > mean(LAT))
+d.LAT50.base<- d[d$LAT>median(d$LAT),]
 #~~~~~~~~~~~~~~~~
 
 #15. Select rows of d that contain ROUTE > 45. This is much trickier than you might think!
 #~~~~~~~~~~~~~~~~
 d.RT45 <- d %>%
-  filter(as.numeric(ROUTE) > 45)
-d.RT45.base <- filter(d, as.numeric(ROUTE) > 45)
+  filter(as.numeric(as.character(ROUTE)) > 45)
 #~~~~~~~~~~~~~~~~
 
 #16. Reorder rows by LAT to create a new data.frame d.LAT. Then reorder d.LAT by ROUTE
@@ -178,6 +190,8 @@ d.RT45.base <- filter(d, as.numeric(ROUTE) > 45)
 d.LAT <- d%>%
   arrange(LAT)%>%
   arrange(ROUTE)
+
+d.LAT.base<- d[order(d$ROUTE),]
 #~~~~~~~~~~~~~~~~
 
 #17. Rename the column in d from ROUTE.num to num.ROUTE. Do this both using and not using dplyr.
@@ -211,7 +225,7 @@ d.ROUTE<- d%>%
   group_by(ROUTE)%>%
   summarize(GROUSE = mean(GROUSE))
 
-d.ROUTE.base<- aggregate(GROUSE~ROUTE, d, mean)
+d.ROUTE.base<- aggregate(GROUSE~ROUTE, data = d, FUN = mean)
 
 #BONUS
 d.NA<- d
@@ -236,9 +250,9 @@ d.ROUTE<- d%>%
 
 #21. Create a data.frame called d.ROUTE that contains the mean value of GROUSE for each ROUTE using a for loop (i.e., group_by() and aggregate() aren't allowed). This involves first creating a data.frame and then looping through the values of ROUTE to fill in values. I've given you the first line creating the data.frame
 #~~~~~~~~~~~~~~~~
-d.ROUTE.loop<- vector("double", length(unique(d$ROUTE)))
-for(i in seq_along(levels(d$ROUTE))){
-  d.ROUTE.loop[i] <- mean(d$GROUSE[i])
+d.ROUTE.loop <- vector("double", length(unique(d$ROUTE)))
+for(i in 1:length(unique(d$ROUTE))){
+  d.ROUTE.loop[i] <- mean(d$GROUSE[d$ROUTE == i])
 }
 print(d.ROUTE.loop)
 #~~~~~~~~~~~~~~~~
