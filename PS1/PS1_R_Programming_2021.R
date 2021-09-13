@@ -238,9 +238,9 @@ d.ROUTE<- d%>%
 #~~~~~~~~~~~~~~~~
 d.ROUTE.loop<- vector("double", length(unique(d$ROUTE)))
 for(i in seq_along(levels(d$ROUTE))){
-  print(d.ROUTE.loop[mean(d$GROUSE[i])])
+  d.ROUTE.loop[i] <- mean(d$GROUSE[i])
 }
-
+print(d.ROUTE.loop)
 #~~~~~~~~~~~~~~~~
 
 #22. Create a data.frame called d.ROUTE that contains the mean value of GROUSE for each ROUTE using a while loop (i.e., group_by() and aggregate() aren't allowed). 
