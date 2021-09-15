@@ -200,6 +200,7 @@ d.LAT.base<- d[order(d$ROUTE),]
 d.rename<- d%>%
   rename(ROUTE.num = ROUTE)%>%
   rename(num.ROUTE = ROUTE.num)
+
 #base R
 names(d)[1]<- "ROUTE.num"
 names(d)[1]<- "num.ROUTE"
@@ -255,14 +256,45 @@ for(i in 1:length(unique(d$ROUTE))){
   d.ROUTE.loop[i] <- mean(d$GROUSE[d$ROUTE == i])
 }
 print(d.ROUTE.loop)
+
+# d.ROUTE<- data.grame(ROUTE = unique(d$num.ROUTE))
+# for(i.ROUTE in unique(d$num.ROUTE)){
+# d.ROUTE$GROUSE[d.ROUTE$ROUTE == i.ROUTE] <- mean(d$GROUSE[d$num.ROUTE == i.ROUTE])
+#}
+
+#Checking if correct
+d.average<- d%>%
+  group_by(as.factor(ROUTE))%>%
+  summarise(mean = mean(GROUSE))
 #~~~~~~~~~~~~~~~~
 
 #22. Create a data.frame called d.ROUTE that contains the mean value of GROUSE for each ROUTE using a while loop (i.e., group_by() and aggregate() aren't allowed). 
-#~~~~~~~~~~~~~~~~
 
+#~~~~~~~~~~~~~~~~
+d$num.ROUTE<- as.numeric(d$ROUTE)
+
+d.ROUTE.while <- data.frame(ROUTE = unique(d$num.ROUTE))
+i <- 0
+while(i <nrow(d.ROUTE.while)){
+  i <- i + 1
+  d.ROUTE.while$GROUSE[i] <- mean(d$GROUSE[d$num.ROUTE == d.ROUTE.while$ROUTE[i]])
+}
+#View the results
+cbind(aggregate(GROUSE ~ROUTE, data = d, FUN = mean), d.ROUTE.while)
+abs(sum(aggregate(GROUSE ~ num.ROUTE, data = d, FUN = mean)$GROUSE != d.ROUTE.while$GROUSE))
 #~~~~~~~~~~~~~~~~
 #23. Create a data.frame called d.ROUTE.NA from d.NA that contains the mean value of GROUSE for each ROUTE using a for loop, in which the ROUTE with an NA is given the value NaN. You will need the is.na() function for this.
 #~~~~~~~~~~~~~~~~
+d.ROUTE.NA<- data.frame(ROUTE = unique(d.NA$num.ROUTE))
+for(i.ROUTE in unique(d.NA$num.ROUTE)){
+  x <- d.NA$GROUSE[d.NA$num.route == i.ROUTE]
+  #if(any(is.na(x))){
+  if(sum(is.na(x))> 0){
+    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i.ROUTE] <- NaN
+  }else{
+    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i.ROUTE]<- mean(x)
+    }
+  }
 
 #~~~~~~~~~~~~~~~~
 #################################################################
@@ -270,10 +302,25 @@ print(d.ROUTE.loop)
 #################################################################
 
 #24. Write a function locate_station() that returns the LAT and LONG for a ROUTE and STATION in d. Note you are best to use num.ROUTE, not ROUTE.
+locate_station <- function(route, station, data){ #define what you put into it
+  return(data[data$num.ROUTE == route & data$STATION == station, c("LAT", "LONG")])
+}
+locate_station(route = 30, station = 3, data = d)
 
 # It is also possible to write the following, but there are risks.
+locate_station_bad<- function(route, station){
+  return(d[d$num.ROUTE == route & d$STATION == station, c("LAT", "LONG")])
+}
+locate_station_bad(route = 30, station = 3)
+
+#SCOPING RULES: excludes the data file. Not good for 300 lines of code
 
 #25. Write a function distance_station() that returns the Euclidean distance between a specified ROUTE and STATION in d and all other routes and stations. Don't bother about converting to meters -- just calculate distance in terms of latitude and longitude values (ignoring that in Wisconsin, a degree latitude is not equal to a degree longitude).
+
+distance_station<- function(route, station, data){
+  focal.location <- locate_station(route = route, station = station, data = data)
+  #keep goinggg
+}
 
 # 26. Write a function plot_station() that plots the location of stations, with the size of the point for each station decreasing with increasing distance from a focal station specified as input to the function.
 
@@ -317,3 +364,4 @@ aggregate(GROUSE ~ num.ROUTE, data=d, FUN=mean)
 
 # 32. Plot a histogram of 1000 values simulated from a Poisson distribution. Then plot the probability density (or mass) function to compare them. You will need the hist() function (with the freq=F option).
 
+#don't worry about process more about inference of the process
