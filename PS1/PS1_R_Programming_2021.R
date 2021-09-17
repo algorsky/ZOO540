@@ -233,7 +233,8 @@ d.NA<- d
 d.NA$ROUTE[1] <- NA
 d.NA<- d.NA %>%
   group_by(ROUTE)%>%
-  summarize(GROUSE = mean(GROUSE))
+  summarize(GROUSE = mean(GROUSE))%>%
+  mutate(num.ROUTE= as.numeric(ROUTE))
 #~~~~~~~~~~~~~~~~
 
 #20. Perform the same operation as in #19 using piping in dplyr.
@@ -286,15 +287,36 @@ abs(sum(aggregate(GROUSE ~ num.ROUTE, data = d, FUN = mean)$GROUSE != d.ROUTE.wh
 #23. Create a data.frame called d.ROUTE.NA from d.NA that contains the mean value of GROUSE for each ROUTE using a for loop, in which the ROUTE with an NA is given the value NaN. You will need the is.na() function for this.
 #~~~~~~~~~~~~~~~~
 d.ROUTE.NA<- data.frame(ROUTE = unique(d.NA$num.ROUTE))
-for(i.ROUTE in unique(d.NA$num.ROUTE)){
-  x <- d.NA$GROUSE[d.NA$num.route == i.ROUTE]
-  #if(any(is.na(x))){
+for(i in 1:length(unique(d.NA$num.ROUTE))){
+  x <- d.NA$GROUSE[d.NA$num.ROUTE == i]
   if(sum(is.na(x))> 0){
-    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i.ROUTE] <- NaN
+    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i] <- NaN
   }else{
-    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i.ROUTE]<- mean(x)
+    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i]<- mean(x)
     }
+}
+
+d.ROUTE.NA<- data.frame(ROUTE = unique(d.NA$num.ROUTE))
+for(i in 1:length(unique(d.NA$num.ROUTE))){
+  if(sum(is.na(d.NA$num.ROUTE[i]))> 0){
+    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i] <- NaN
+  }else{
+    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i]<- mean(d.NA$GROUSE[d.NA$num.ROUTE == i])
   }
+}
+d.ROUTE.NA<- data.frame(ROUTE = unique(d.NA$num.ROUTE))
+for(i in 1:length(unique(d.NA$num.ROUTE))){
+  if(is.na(d.NA$num.ROUTE[i])== "TRUE"){
+    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i] <- NaN
+  }else{
+    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i]<- mean(d.NA$GROUSE[d.NA$num.ROUTE == i])
+  }
+}
+
+d.ROUTE.loop <- data.frame(ROUTE = length(unique(d$ROUTE)))
+for(i in 1:length(unique(d$ROUTE))){
+  d.ROUTE.loop[i] <- mean(d$GROUSE[d$ROUTE == i])
+}
 
 #~~~~~~~~~~~~~~~~
 #################################################################
