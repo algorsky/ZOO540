@@ -3,7 +3,7 @@
 
 # First, install the packages below if you haven't already got them on your computer. You won't need them all for chapter 1, but they are all used among the different chapters.
 
-# install.packages(c("lme4", "lmerTest", "ape", "phylolm", "MCMCglmm", "mvtnorm", "car", "phytools", "phangorn", "logistf", "devtools", "phyr"))
+#install.packages(c("lme4", "lmerTest", "ape", "phylolm", "MCMCglmm", "mvtnorm", "car", "phytools", "phangorn", "logistf", "devtools", "phyr"))
 
 # There is an additional package that are on github. To get them, you first have to load devtools
 # devtools::install_github("arives/rr2")
@@ -65,7 +65,7 @@ library(car)
 # Detection/non-detection of Ruffed Grouse (1 = detected, 0 = not detected).
 
 # read data
-d <- read.csv(file="grouse_data.csv", header=T)
+d<- read.csv('PS2/grouse_data.csv')
 
 # STATION and ROUTE were uploaded as integers; this converts them to factors.
 d$STATION <- as.factor(d$STATION)

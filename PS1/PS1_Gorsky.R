@@ -29,7 +29,7 @@ m3<- as.matrix(rbind(1:5,6:10))
 #2. Label the rows of your matrix "A" and "B", and the columns "a", ..."e".
 #~~~~~~~~~~~~~~~~
 rownames(m) <- c("A", "B")
-colnames(m) <- c("a", "b", "c", "d","e")
+colnames(m) <- c("a", "b", "c", "d","e") #letters[1:5]
 #~~~~~~~~~~~~~~~~
 
 #3. Convert the values of your matrix to double.
@@ -133,6 +133,8 @@ d1<- d %>%
 #10. How many different routes are there in d?
 #~~~~~~~~~~~~~~~~
 #50 different routes
+levels(d$ROUTE)
+nlevels(d$ROUTE)
 #~~~~~~~~~~~~~~~~
 
 #11. Construct a matrix d.matrix that has the same information as d. Compute the number of routes using d.matrix and the unique() function.
@@ -151,6 +153,17 @@ d2<- d1%>%
   mutate(QUADRANT = ifelse(STATION == 0, "northwest", 
                            ifelse(STATION == 1, "northeast", 
                                   ifelse(STATION == 2, "southwest", "southeast"))))
+
+d$WEST<- FALSE
+d$WEST[d$LONG > median(d$LONG)] <- TRUE
+d$QUADRANT<- 2 * (!d$NORTH) + (!d$WEST)
+
+QUADRANT<- vector(length = nrow(d))
+QUADRANT[d$LAT > mean(range(d$LAT)) & d$LONG < mean(range(d$LONG))] <- 0
+QUADRANT[d$LAT > mean(range(d$LAT)) & d$LONG < mean(range(d$LONG))] <- 1 #adjust
+QUADRANT[d$LAT > mean(range(d$LAT)) & d$LONG < mean(range(d$LONG))] <- 2 #adjust
+QUADRANT[d$LAT > mean(range(d$LAT)) & d$LONG < mean(range(d$LONG))] <- 3 #adjust
+
 #~~~~~~~~~~~~~~~~
 
 #################################################################
@@ -234,14 +247,19 @@ d.NA[1,] <- NA
 d.NA$num.ROUTE <- as.numeric(d.NA$ROUTE)
 d.NA<- d.NA %>%
   group_by(ROUTE, num.ROUTE)%>%
-  summarize(GROUSE = mean(GROUSE))
+  summarize(GROUSE = mean(GROUSE, na.rm = T))
+
+d.NA<- d
+d.NA$GROUSE[1] <- NA
+d.NA[!is.na(d.NA$GROUSE),]
+d.NA[complete.cases(d.NA),]
 #~~~~~~~~~~~~~~~~
 
 #20. Perform the same operation as in #19 using piping in dplyr.
 #~~~~~~~~~~~~~~~~
 d.ROUTE<- d%>%
   group_by(ROUTE)%>%
-  summarize(GROUSE = mean(GROUSE))
+  summarize(GROUSE = mean(GROUSE, na.rm = T))
 #~~~~~~~~~~~~~~~~
 
 #################################################################
@@ -295,7 +313,7 @@ for(i in 1:length(unique(d.NA$num.ROUTE))){
   if((is.na(x)) == TRUE){
     d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i] <- NaN
   }else{
-    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i] <- x
+    d.ROUTE.NA$GROUSE[d.ROUTE.NA$ROUTE == i] <- mean(x)
   }
 }
 
