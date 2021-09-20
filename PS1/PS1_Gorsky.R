@@ -344,6 +344,25 @@ distance_station<- function(route, station, data){
 }
 distance_station(route = 30, station = 3, data = d)
 
+distance_station<- function(route, station, data){
+  focal.location <- locate_station(route = route, station = station, data = data)
+  w <- data[,c("num.ROUTE", "STATION", "LAT", "LONG")]
+  for(i in 1:nrow(w)) 
+    w$distance[i] <- ((focal.location$LAT - data$LAT[i])^2 +
+                        focal.location$LONG - data$LONG[i]^2)^0.5
+  return(w)
+}
+distance_station(route = 30, station = 3, data = d)
+
+#Use geosphere::distm that assumes locations are in degrees
+distance_station_distm <- function(route, station, data){
+  focal.location <- locate_station(route = route, station = station, data = data)
+  w<- data[,c("num.ROUTE", "STATION", "LAT", "LONG")]
+  w$distance<- as.numeric(geosphere::distm(rev(focal.location)/
+                                             (360*360), data[,c("LONG", "LAT")]/ (360/360)))
+  return(w)
+}
+distance_station_distm(route = 30)
 # 26. Write a function plot_station() that plots the location of stations, with the size of the point for each station decreasing with increasing distance from a focal station specified as input to the function.
 library(ggplot2)
 plot_station <- function(route, station, data){
@@ -352,6 +371,12 @@ plot_station <- function(route, station, data){
   return(ggplot(data = d) + geom_point(aes(x = LONG, y = LAT, size = rank), shape = 1))
 }
 plot_station(route = 40, station = 3, data = d)
+
+plot_station<- function(route, station, data, ...){
+  focal.location <- locate_station(route = route, station = station, data = data)
+  z <- distance_station(route = route, station = station, data = data)
+  plot(-z$LONG, z$LAT, cex = 2 * (1-z$distance/max(z$distance)),...)
+}
 
 #################################################################
 # Chapt 16. Scoping rules in R
