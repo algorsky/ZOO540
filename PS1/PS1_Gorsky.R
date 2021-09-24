@@ -399,7 +399,7 @@ plot_station<- function(route, station, data, ...){
 # 28. Use tapply() to create the same date.frame as aggregate(GROUSE ~ num.ROUTE, data=d, FUN=mean). You can also try this using ROUTE rather than num.ROUTE, and you will see some problems.
 aggregate<- aggregate(GROUSE ~ num.ROUTE, data=d, FUN=mean)
 
-t.apply<- tapply(d$GROUSE,d$num.ROUTE, mean)
+t.apply<- tapply(d$GROUSE,d$num.ROUTE, mean) #applying to tabular data
 print(t.apply)
 
 # 29. First, add columns to data.frame d which give the distance of each station from two locations (e.g., ROUTE = 1, STATION = 1; and ROUTE = 40, STATION = 1). Use apply() to create an additional column that is the sum of these distances.
@@ -423,14 +423,17 @@ apply.dataframe<- apply(grouse$GROUSE, 1, FUN = mean)
 #################################################################
 
 # 31. Plot a histogram of 1000 values simulated from a Gaussian distribution. Then plot the probability density function to compare them. You will need the hist() function (with the freq=F option).
-x <- rnorm(1000)
+x <- rnorm(1000) #default mean of 0 sd of 1
 hist(x)
 hist(x, freq = FALSE)
+curve(dnorm, from = -3, to =3, col = "red", type = "p", add = T)
 
 
 # 32. Plot a histogram of 1000 values simulated from a Poisson distribution. Then plot the probability density (or mass) function to compare them. You will need the hist() function (with the freq=F option).
+lambda <- 3
+X = rpois(100, lambda = lambda)
+hist(X, freq = FALSE, breaks = 0:(5*lambda)- 0.1)
+points(0:(5*lambda) + .5, dpois(0:(5*lambda), lambda = lambda), col = "red")
 
-y = rpois(1000, 2)
-hist(y, freq = FALSE)
 
 #don't worry about process more about inference of the process

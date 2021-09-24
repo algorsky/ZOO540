@@ -1,9 +1,9 @@
-# PS3
+# PS2
 # due 26 September, 2021 by midnight
 
 # First, install the packages below if you haven't already got them on your computer. You won't need them all for chapter 1, but they are all used among the different chapters.
 
-#install.packages(c("lme4", "lmerTest", "ape", "phylolm", "MCMCglmm", "mvtnorm", "car", "phytools", "phangorn", "logistf", "devtools", "phyr"))
+# install.packages(c("lme4", "lmerTest", "ape", "phylolm", "MCMCglmm", "mvtnorm", "car", "phytools", "phangorn", "logistf", "devtools", "phyr"))
 
 # There is an additional package that are on github. To get them, you first have to load devtools
 # devtools::install_github("arives/rr2")
@@ -17,7 +17,7 @@ library(car)
 
 # This problem set begins to explore the grouse data. It is based on correlated_data Ch1 sections 1.1 to 1.4.
 
-	# For the homework, ONLY TURN IN THE R CODE THAT YOU USED. Start with the code from correlated_data ("Ch_1_10Aug18.R") which is below and add to it anything you need. Identify you new code (so I can find it) by placing it between marker rows #~~~~~~~~~~~~~~~~~~~~~~~~~~~. I will get your full answers to the questions by randomly asking people in class, so there is no need for you to write them down.
+# For the homework, ONLY TURN IN THE R CODE THAT YOU USED. Start with the code from correlated_data ("Ch_1_10Aug18.R") which is below and add to it anything you need. Identify you new code (so I can find it) by placing it between marker rows #~~~~~~~~~~~~~~~~~~~~~~~~~~~. I will get your full answers to the questions by randomly asking people in class, so there is no need for you to write them down.
 
 # 1. In figure 1.1 (left panel), it looks like there is spatial correlation in the numbers of grouse scored per route (even though there isn't). Is there a simple way you could test for spatial correlation? (NOTE: This might require NO NEW R CODE.)
 
@@ -65,7 +65,7 @@ library(car)
 # Detection/non-detection of Ruffed Grouse (1 = detected, 0 = not detected).
 
 # read data
-d<- read.csv('PS2/grouse_data.csv')
+d<- read.csv('PS1/grouse_data.csv', header = T)
 
 # STATION and ROUTE were uploaded as integers; this converts them to factors.
 d$STATION <- as.factor(d$STATION)
@@ -117,6 +117,15 @@ summary(lm(asin(sqrt(MEAN_GROUSE)) ~ MEAN_WIND, data=w))
 w$SUCCESS <- cbind(w$GROUSE, w$STATIONS - w$GROUSE)
 summary(glm(SUCCESS ~ MEAN_WIND, family = binomial, data=w))
 
+#~~~~~~~~~~~~~~~~
+summary(glm(SUCCESS ~ MEAN_WIND, family = binomial(link = "probit"), data=w))
+mod.probitf <- glm(SUCCESS ~ MEAN_WIND, family = binomial(link = "probit"), data=w)
+mod.probitr <- glm(SUCCESS ~ 1, family = binomial(link = "probit"), data=w)
+deviance.probit <- 2*(logLik(mod.probitf) - logLik(mod.probitr))
+LRT.bprobit1 <- c(dev = deviance.probit, p.value=pchisq(deviance.probit, df=1, lower.tail=F))
+LRT.bprobit1
+#~~~~~~~~~~~~~~~~
+
 # Likelihood Ratio Test for b1.
 mod.f <- glm(SUCCESS ~ MEAN_WIND, family = binomial, data=w)
 mod.r <- glm(SUCCESS ~ 1, family = binomial, data=w)
@@ -137,7 +146,7 @@ summary(glmer(SUCCESS ~ MEAN_WIND + (1 | ROUTE), data=w, family=binomial))
 
 # This is the inverse logit function
 inv.logit <- function(x){
-	1/(1 + exp(-x))
+  1/(1 + exp(-x))
 }
 
 # Simulate the logit normal-binomial GLMM. Note that samples = 1000 points are simulated.
@@ -170,54 +179,7 @@ x <- .1*(-40:40)
 lines(n*inv.logit(b0 + b1*x) ~ x, col="red")
 
 #########################################################
-# 1.5 Station-level analyses
-#########################################################
-
-######
-# 1.5.1 LM at the station level
-summary(lm(GROUSE ~ WIND, data=d))
-
-######
-# 1.5.2 GLM at the station level
-summary(glm(GROUSE ~ WIND, data=d, family=binomial))
-
-# quasi-GLM: This is not appropriate, because for binary (0 or 1) data, the variance has to be m(1-m)
-
-######
-# 1.5.3 GLM with ROUTE as a factor
-library(car)
-Anova(glm(GROUSE ~ WIND + ROUTE, data=d, family=binomial))
-
-######
-# 1.5.4 GLMM: 
-summary(glmer(GROUSE ~ WIND + (1 | ROUTE), data=d, family=binomial))
-
-# Demonstration of the structure of a mixed model
-z.glm <- glm(GROUSE ~ 0 + WIND + ROUTE, data=d, family=binomial)
-
-z.glmm <- glmer(GROUSE ~ WIND + (1 | ROUTE), data=d, family=binomial)
-
-par(mfrow=c(1,2), mai=c(1,.8,.5,.1), mgp=c(3,.5,0))
-hist(z.glm$coef[2:51], breaks=(-20:20), freq=F,  main="Estimates from GLM", xlab="b1")
-hist(coef(z.glmm)$ROUTE[[1]], breaks=(-20:20), freq=F, main="Estimates from GLMM", xlab="b1")
-lines(.02*(-1000:1000), dnorm(.02*(-1000:1000), mean=fixef(z.glmm)['WIND'], sd=summary(z.glmm)$var[[1]][1]^.5), col="red")
-
-# This is the variance of the ROUTE coefficients that can be compared to the ROUTE random effect in the GLMM. It is much larger.
-var(z.glm$coef[2:51])
-
-# This produces a data.frame d.no0 that only contains ROUTES with at least one grouse observation, and then enalyzes it with glm() and glmer()
-w.no0 <- w[w$MEAN_GROUSE > 0,]
-d.no0 <- d[is.element(d$ROUTE, w.no0$ROUTE),]
-
-Anova(glm(GROUSE ~ WIND + ROUTE, data=d.no0, family=binomial))
-summary(glmer(GROUSE ~ WIND + (1 | ROUTE), data=d.no0, family=binomial))
-
-######
-# 1.5.5 LMM: Even though this is a linear model, it incorporates the non-independence of STATIONS within ROUTES.
-summary(lmer(GROUSE ~ WIND + (1 | ROUTE), data=d))
-
-#########################################################
-# 1.6 Reiteration of results
+# Reiteration of results
 #########################################################
 
 # Route-level methods
