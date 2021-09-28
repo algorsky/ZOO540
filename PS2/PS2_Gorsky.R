@@ -124,6 +124,16 @@ mod.probitr <- glm(SUCCESS ~ 1, family = binomial(link = "probit"), data=w)
 deviance.probit <- 2*(logLik(mod.probitf) - logLik(mod.probitr))
 LRT.bprobit1 <- c(dev = deviance.probit, p.value=pchisq(deviance.probit, df=1, lower.tail=F))
 LRT.bprobit1
+#statistically no reason to use one verse another
+
+#Binomial model (GLM) with size > 1
+SUCCESS<- cbind(success, failure)
+z<- glm(SUCCESS ~ X, family = binomial)
+#Normal- binomial model
+obs<- 1:n
+z<- glmer(SUCCESS ~ X + (1|obs), family = binomial)
+
+# different p-values and estimate given 8 model choices <- CH2 gives you the tools to assess quality
 #~~~~~~~~~~~~~~~~
 
 # Likelihood Ratio Test for b1.
@@ -143,6 +153,7 @@ summary(glmer(SUCCESS ~ MEAN_WIND + (1 | ROUTE), data=w, family=binomial))
 
 ######
 # 1.4.5 Simulation of overdispersion
+# take this simulaiton code and trying it out for the LM
 
 # This is the inverse logit function
 inv.logit <- function(x){
